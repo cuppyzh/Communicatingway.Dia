@@ -1,0 +1,9 @@
+{
+    "Author": "Cuppyzh",
+    "Name": "Discord Chat Bridge for DIA",
+    "Description": "This plugin allows you forward your FC ingame message, to your discord channel.",
+    "InternalName": "Communicatingway.Dia",
+    "RepoUrl": "",
+    "Tags": [ "discord", "chat" ],
+    "Punchline": "Anyone up for maps?"
+}
