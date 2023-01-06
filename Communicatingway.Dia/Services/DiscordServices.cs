@@ -66,12 +66,14 @@ namespace Communicatingway.Dia.Services
             }
         }
 
-        public void SendMessage(SeString sender, SeString message)
+        public async Task SendMessage(SeString sender, SeString message)
         {
             string draftMessage = $"***{sender.TextValue}***: {message.TextValue}";
+            draftMessage = draftMessage.Replace("\ue040", "「");
+            draftMessage = draftMessage.Replace("\ue041", "」");
             PluginLog.LogDebug($"Draft Message: {draftMessage}");
 
-            _messageChannel.SendMessageAsync(draftMessage).GetAwaiter().GetResult();
+            await Task.Run(() => _messageChannel.SendMessageAsync(draftMessage));
         }
 
         private Task ReadyAsync()

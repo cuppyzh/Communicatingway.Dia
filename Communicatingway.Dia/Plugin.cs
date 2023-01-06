@@ -104,8 +104,7 @@ namespace Communicatingway.Dia
                 return;
             }
 
-            PluginLog.Debug($"Message: {message.TextValue}");
-            _discordService.SendMessage(sender.TextValue, message.TextValue);
+            _discordService.SendMessage(sender.TextValue, message.TextValue).GetAwaiter().GetResult();
         }
     }
 }
