@@ -31,7 +31,7 @@ namespace Communicatingway.Dia
         {
             try
             {
-                _LoadConfig();
+                AppConfiguration.LoadConfig();
 
                 PluginLog.Debug("Load event ... please dont crash");
                 _chatGui.ChatMessage += ChatMessage;
@@ -60,36 +60,6 @@ namespace Communicatingway.Dia
             }
 
             _chatGui.ChatMessage -= ChatMessage;
-        }
-
-        private void _LoadConfig()
-        {
-            PluginLog.LogDebug($"Loading config in progress");
-
-            var currentPath = Assembly.GetExecutingAssembly().Location;
-
-            if (string.IsNullOrEmpty(currentPath))
-            {
-                throw new Exception("Current assembly path is null");
-            }
-
-            string configFilePath = Path.Combine(Path.GetDirectoryName(currentPath),
-                AppConstants.CONFIG_FILE);
-
-            if (string.IsNullOrEmpty(configFilePath))
-            {
-                throw new Exception($"Config file {AppConstants.CONFIG_FILE} is empty");
-            }
-
-            PluginLog.LogDebug($"Find config file with path: {configFilePath}");
-
-            using (StreamReader streamReader = new StreamReader(configFilePath))
-            {
-                string configFile = streamReader.ReadToEnd();
-                this.AppConfiguration = JsonConvert.DeserializeObject<AppConfiguration>(configFile);
-            }
-
-            PluginLog.LogDebug($"Load config is success");
         }
 
         private void ChatMessage(XivChatType type, uint senderId, ref SeString sender, ref SeString message, ref bool isHandled)

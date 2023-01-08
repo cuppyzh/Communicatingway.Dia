@@ -15,8 +15,8 @@ namespace Communicatingway.Dia.Services
 {
     public class DiscordServices
     {
-        private DiscordSocketClient? _discordSocketClient;
-        private AppConfiguration? _appConfiguration;
+        private readonly DiscordSocketClient? _discordSocketClient;
+        private readonly AppConfiguration? _appConfiguration;
         private IMessageChannel? _messageChannel;
 
         public DiscordServices(AppConfiguration appConfiguration)
@@ -28,7 +28,7 @@ namespace Communicatingway.Dia.Services
                     LogLevel = LogSeverity.Debug
                 }
             );
-            _discordSocketClient.Ready += ReadyAsync;
+            _discordSocketClient.Ready += _ReadyAsync;
         }
 
         public async Task Start()
@@ -37,6 +37,16 @@ namespace Communicatingway.Dia.Services
 
             try
             {
+                if (_discordSocketClient == null)
+                {
+                    throw new Exception("Discord socket client is null");
+                }
+
+                if (_appConfiguration == null)
+                {
+                    throw new Exception("AppConfig is null");
+                }
+
                 await _discordSocketClient.LoginAsync(TokenType.Bot, _appConfiguration.DiscordBotToken);
                 await _discordSocketClient.StartAsync();
 
@@ -47,7 +57,7 @@ namespace Communicatingway.Dia.Services
                 PluginLog.LogError($"Discord bot failed to start: {ex.Message} {ex.InnerException?.Message}");
                 PluginLog.LogError($"{ex.StackTrace}");
 
-                throw ex;
+                throw new Exception($"Discord bot failed to start: {ex.Message} {ex.InnerException?.Message}");
             }
         }
 
@@ -57,6 +67,11 @@ namespace Communicatingway.Dia.Services
 
             try
             {
+                if (_discordSocketClient == null)
+                {
+                    return;
+                }
+
                 await _discordSocketClient.StopAsync();
             }
             catch (Exception ex)
@@ -68,16 +83,28 @@ namespace Communicatingway.Dia.Services
 
         public async Task SendMessage(SeString sender, SeString message)
         {
-            string draftMessage = $"***{sender.TextValue}***: {message.TextValue}";
-            draftMessage = draftMessage.Replace("\ue040", "「");
-            draftMessage = draftMessage.Replace("\ue041", "」");
-            PluginLog.LogDebug($"Draft Message: {draftMessage}");
+            if (_messageChannel == null)
+            {
+                throw new Exception("Message Channel si null.");
+            }
+
+            string draftMessage = $"***{sender.TextValue}***: {_ParseMessage(message.TextValue)}";
 
             await Task.Run(() => _messageChannel.SendMessageAsync(draftMessage));
         }
 
-        private Task ReadyAsync()
+        private Task _ReadyAsync()
         {
+            if (_discordSocketClient == null)
+            {
+                throw new Exception("Discord socket client is null");
+            }
+
+            if (_appConfiguration == null)
+            {
+                throw new Exception("AppConfig is null");
+            }
+
             PluginLog.Information($"{_discordSocketClient.CurrentUser} is connected!");
             _messageChannel = _discordSocketClient.GetChannel(Convert.ToUInt64(_appConfiguration.DiscordChannelId)) as IMessageChannel;
 
@@ -88,6 +115,18 @@ namespace Communicatingway.Dia.Services
             }
 
             return Task.CompletedTask;
+        }
+
+        private string _ParseMessage(string message)
+        {
+            string cleanMessage = message;
+
+            cleanMessage = cleanMessage.Replace("\ue040", "「");
+            cleanMessage = cleanMessage.Replace("\ue041", "」");
+
+            PluginLog.LogDebug($"Cleaned Message: {cleanMessage}");
+
+            return cleanMessage;
         }
     }
 }
